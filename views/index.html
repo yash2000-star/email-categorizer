@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gmail Categorizer - Test</title>
+    <style>
+        .email-card {
+            border: 1px solid #ddd;
+            margin: 10px;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .error-message {
+            color: red;
+            padding: 10px;
+            background-color: #ffebee;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success-message {
+            color: green;
+            padding: 10px;
+            background-color: #e8f5e9;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        #status {
+            margin: 10px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gmail Categorizer - Testing Interface</h1>
+    <div id="status"></div>
+    <button onclick="testConnection()">Test Server Connection</button>
+    <button onclick="fetchEmails()">Fetch Emails</button>
+    <button onclick="authenticate()">Authenticate with Gmail</button>
+    <div id="emailList"></div>
+
+    <script>
+        // Test server connection
+        async function testConnection() {
+            const status = document.getElementById('status');
+            try {
+                const response = await fetch('/');
+                const text = await response.text();
+                status.innerHTML = `<div class="success-message">Server Connection Success: ${text}</div>`;
+            } catch (error) {
+                status.innerHTML = `<div class="error-message">Connection Error: ${error.message}</div>`;
+            }
+        }
+
+        // Fetch emails
+        async function fetchEmails() {
+            const emailList = document.getElementById('emailList');
+            const status = document.getElementById('status');
+            
+            try {
+                status.innerHTML = '<div>Loading emails...</div>';
+                const response = await fetch('/api/emails/fetch');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayEmails(data.data);
+                    status.innerHTML = '<div class="success-message">Emails fetched successfully!</div>';
+                } else {
+                    status.innerHTML = `<div class="error-message">Error: ${data.error}</div>`;
+                }
+            } catch (error) {
+                status.innerHTML = `<div class="error-message">Failed to fetch emails: ${error.message}</div>`;
+            }
+        }
+
+        // Display emails
+        function displayEmails(emails) {
+            const emailList = document.getElementById('emailList');
+            if (!emails || emails.length === 0) {
+                emailList.innerHTML = '<div class="email-card">No emails found</div>';
+                return;
+            }
+
+            emailList.innerHTML = emails.map(email => `
+                <div class="email-card">
+                    <h3>${email.subject || 'No Subject'}</h3>
+                    <p><strong>From:</strong> ${email.from || 'Unknown Sender'}</p>
+                    <p><strong>Date:</strong> ${email.date || 'No Date'}</p>
+                    <p><strong>Preview:</strong> ${email.snippet || 'No preview available'}</p>
+                </div>
+            `).join('');
+        }
+
+        // Authenticate with Gmail
+        function authenticate() {
+    window.location.href = '/auth/google';
+}
+
+        // Initial connection test
+        testConnection();
+    </script>
+</body>
+</html>
